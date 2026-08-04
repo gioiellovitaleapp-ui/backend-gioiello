@@ -1,28 +1,45 @@
-import sys
-import os
-
-# Ajoute le dossier courant au chemin de recherche de Python
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from src.ingestion import fetch_rss_feed
+import feedparser
 from src.processor import filter_new_articles
 
-# Exemple de flux RSS cible
-SAMPLE_RSS_URL = "https://www.ansa.it/sito/notizie/sport/calcio/calcio_rss.xml"
+# URL de ton flux RSS (tu pourras remplacer par ton flux cible)
+RSS_URL = "https://www.gazzetta.it/rss/squadra/juventus.xml" 
 
-def run_pipeline():
-    print("--- Démarrage du pipeline Gioiello Vitale ---")
+def fetch_rss_articles():
+    print(f"Récupération du flux RSS : {RSS_URL}")
+    feed = feedparser.parse(RSS_URL)
+    articles = []
     
-    # 1. Récupération des articles
-    raw_articles = fetch_rss_feed(SAMPLE_RSS_URL)
-    print(f"Articles bruts récupérés : {len(raw_articles)}")
+    for entry in feed.entries:
+        article = {
+            "title": entry.get("title"),
+            "link": entry.get("link"),
+            "published": entry.get("published", "")
+        }
+        articles.append(article)
+        
+    print(f"Articles bruts trouvés dans le flux : {len(articles)}")
+    return articles
+
+def main():
+    print("--- Lancement du Pipeline Gioiello Vitale ---")
     
-    # 2. Filtrage pour ne garder que les nouveautés
-    new_articles = filter_new_articles(raw_articles)
-    print(f"Nouveaux articles après filtrage : {len(new_articles)}")
+    # 1. Récupération des articles bruts du flux RSS
+    articles_bruts = fetch_rss_articles()
     
-    for art in new_articles:
-        print(f" -> [Inédit] {art['title']}")
+    if not articles_bruts:
+        print("Aucun article trouvé dans le flux.")
+        return
+
+    # 2. Application de la Forteresse Idempotente (via src/processor.py)
+    # Cela met à jour 'queue_status.json' et isole uniquement les nouveautés
+    articles_a_traiter = filter_new_articles(articles_bruts)
+    
+    print(f"Articles réellement en attente de traitement (pending) : {len(articles_a_traiter)}")
+    
+    for art in articles_a_traiter:
+        print(f" - [NOUVEAU] {art['title']}")
+
+    print("--- Fin du traitement du pipeline ---")
 
 if __name__ == "__main__":
-    run_pipeline()
+    main()
