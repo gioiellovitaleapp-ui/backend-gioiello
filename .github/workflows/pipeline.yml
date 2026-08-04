@@ -1,4 +1,3 @@
-```yaml
 name: Pipeline Gioiello Vitale
 
 on:
@@ -27,5 +26,3 @@ jobs:
 
       - name: Export Feed for Frontend
         run: python src/export_feed.py
-
-```
