@@ -1,0 +1,27 @@
+name: Gioiello Vitale Pipeline
+
+on:
+  schedule:
+    - cron: '0 * * * *' # S'exécute toutes les heures
+  workflow_dispatch:      # Permet aussi de le lancer manuellement en 1 clic
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code du dépôt
+        uses: actions/checkout@v4
+
+      - name: Configurer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Installer les dépendances
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+
+      - name: Lancer le script principal
+        run: |
+          python main.py
