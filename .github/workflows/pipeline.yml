@@ -1,9 +1,11 @@
-name: Gioiello Vitale Pipeline
+name: Pipeline Gioiello Vitale
 
 on:
-  schedule:
-    - cron: '0 * * * *' # S'exécute toutes les heures
-  workflow_dispatch:      # Permet aussi de le lancer manuellement en 1 clic
+  workflow_dispatch:
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
 
 jobs:
   run-pipeline:
