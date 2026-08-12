@@ -1,47 +1,51 @@
-name: Gioiello Vitale Pipeline
+name: Pipeline Gioiello Vitale
 
 on:
-  # Exécution automatique toutes les 4 heures
   schedule:
+    # Exécution automatique toutes les 4 heures (à adapter si besoin)
     - cron: '0 */4 * * *'
-  
-  # Permet de lancer le test manuellement depuis l'onglet Actions
-  workflow_dispatch:
-
-permissions:
-  contents: write
+  workflow_dispatch: # Permet un déclenchement manuel depuis l'onglet Actions
 
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write # Indispensable pour permettre au bot de pousser les modifications
+
     steps:
-      # Étape 1 : Récupération du code
+      # 1. Récupération du code source du dépôt
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Étape 2 : Installation de Python
+      # 2. Configuration de l'environnement Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: 'pip'
 
-      # Étape 3 : Installation des dépendances (feedparser et pytz)
+      # 3. Installation des dépendances
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install feedparser pytz
 
-      # Étape 4 : Exécution du script principal (situé à la racine)
+      # 4. Exécution du pipeline Python principal
       - name: Run main script
         run: python main.py
 
-      # Étape 5 : Sauvegarde automatique des résultats sur GitHub
-      - name: Commit and push changes
+      # 5. Commit et Push automatique des fichiers générés
+      - name: Commit and push updated files
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.io'
-          git add feed_output.json queue_status.json version.json 2>/dev/null || true
-          git commit -m "Auto: Update feed [skip ci]" || echo "No changes to commit"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Ajout des fichiers modifiés et suivis
+          git add feed_output.json queue_status.json
+          
+          # Vérifie s'il y a des changements avant de commiter (évite les erreurs si rien n'a bougé)
+          git diff --staged --quiet || git commit -m "chore: update feed output and queue status [skip ci]"
+          
+          # Pousse les modifications sur la branche principale
           git push
