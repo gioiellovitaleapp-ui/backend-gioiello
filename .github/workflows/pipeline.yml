@@ -42,6 +42,6 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.io'
-          git add feed_output.json queue_status.json version.json
+          git add feed_output.json queue_status.json version.json 2>/dev/null || true
           git commit -m "Auto: Update feed [skip ci]" || echo "No changes to commit"
           git push
