@@ -33,9 +33,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install feedparser pytz
 
-      # Étape 4 : Exécution du script principal
+      # Étape 4 : Exécution du script principal (situé à la racine)
       - name: Run main script
-        run: python src/main.py
+        run: python main.py
 
       # Étape 5 : Sauvegarde automatique des résultats sur GitHub
       - name: Commit and push changes
