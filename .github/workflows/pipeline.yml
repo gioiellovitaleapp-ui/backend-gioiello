@@ -1,39 +1,46 @@
-name: Pipeline Gioiello Vitale
+name: Gioiello Vitale Pipeline
 
 on:
+  # Exécution automatique toutes les 4 heures
+  schedule:
+    - cron: '0 */4 * * *'
+  
+  # Permet de lancer le test manuellement depuis l'onglet Actions
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
-    
-    permissions:
-      contents: write
 
     steps:
+      # Étape 1 : Récupération du code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Étape 2 : Installation de Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: 'pip'
 
+      # Étape 3 : Installation des dépendances (feedparser et pytz)
       - name: Install dependencies
-        run: pip install --no-cache-dir -r requirements.txt
-
-      - name: Run pipeline
-        run: python main.py
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-
-      - name: Export Feed for Frontend
-        run: python src/export_feed.py
-
-      - name: Commit and push feed_output.json
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add feed_output.json
-          git commit -m "Mise automatique de feed_output.json [skip ci]" || exit 0
-          git push
+          python -m pip install --upgrade pip
+          pip install feedparser pytz
+
+      # Étape 4 : Exécution du script principal
+      - name: Run main script
+        run: python src/main.py
+
+      # Étape 5 : Sauvegarde automatique des résultats sur GitHub
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.io'
+          git add feed_output.json queue_status.json version.json 2>/dev/null || true
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto: Update feed [skip ci]" && git push)
