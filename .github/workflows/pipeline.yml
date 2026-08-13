@@ -35,7 +35,7 @@ jobs:
       - name: Run main script
         run: python main.py
 
-      # 5. Commit et Push automatique des fichiers générés
+      # 5. Commit et Push automatique des fichiers générés sur la branche main
       - name: Commit and push updated files
         run: |
           git config --global user.name "github-actions[bot]"
@@ -49,3 +49,13 @@ jobs:
           
           # Pousse les modifications sur la branche principale
           git push
+
+      # 6. Déploiement automatique du feed sur la branche gh-pages pour l'accès public
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: .
+          force_orphan: true
+          keep_files: false
